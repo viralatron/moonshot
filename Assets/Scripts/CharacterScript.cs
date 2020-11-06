@@ -12,23 +12,27 @@ public class CharacterScript : MonoBehaviour
     private bool groundedCharacter;
     private Vector3 playerVelocity;
     private CharacterController controller;
+    private Camera cam;
+    private Transform mesh;
 
     // Start is called before the first frame update
     void Start()
     {
         controller = gameObject.GetComponent<CharacterController>();
+        cam = Camera.main;
+        mesh = transform.GetChild(0);
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
+        LookAtPosition(Input.mousePosition);
         groundedCharacter = controller.isGrounded;
         if (groundedCharacter && playerVelocity.y < 0)
         {
             playerVelocity.y = 0f;
         }
 
-        // falta gravidade
         float vMovement = Input.GetAxis("Vertical");
         float hMovement = Input.GetAxis("Horizontal");
         bool jumpButton = Input.GetButton("Jump");
@@ -43,8 +47,9 @@ public class CharacterScript : MonoBehaviour
     }
 
     void onHit(int damage){
+        health -= damage;
         if(health <= 0){
-            Debug.Log("dead");
+            Debug.Log("dead"); // death animation? dunno
         }
     }
 
@@ -55,7 +60,9 @@ public class CharacterScript : MonoBehaviour
             health = maxHealth;
     }
 
-    void Attack(){}
+    void Attack(){
+        // now how am I going to attack?
+    }
     void Jump(float height){
         playerVelocity.y += Mathf.Sqrt(jumpHeight * -3.0f * gravityValue);
         controller.Move(playerVelocity * Time.deltaTime);
@@ -67,5 +74,19 @@ public class CharacterScript : MonoBehaviour
     void Fall(float gravity) {
         playerVelocity.y += gravityValue * Time.deltaTime;
         controller.Move(playerVelocity * Time.deltaTime);
+    }
+
+    void LookAtPosition(Vector3 position){
+
+        // use a raycast to find position
+        Ray ray = cam.ScreenPointToRay(position);
+        Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+        float rayLength;
+
+        if(groundPlane.Raycast(ray, out rayLength)){
+            Vector3 target = ray.GetPoint(rayLength);
+            mesh.LookAt(target);
+            Debug.DrawLine(mesh.position, target, Color.blue);
+        }
     }
 }
