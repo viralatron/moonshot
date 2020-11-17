@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,14 +14,12 @@ public class CharacterScript : MonoBehaviour
     private Vector3 playerVelocity;
     private CharacterController controller;
     private Camera cam;
-    private Transform mesh;
 
     // Start is called before the first frame update
     void Start()
     {
         controller = gameObject.GetComponent<CharacterController>();
         cam = Camera.main;
-        mesh = transform.GetChild(0);
     }
 
     // Update is called once per frame
@@ -49,7 +48,7 @@ public class CharacterScript : MonoBehaviour
     void onHit(int damage){
         health -= damage;
         if(health <= 0){
-            Debug.Log("dead"); // death animation? dunno
+            GameObject.Destroy(this.gameObject);
         }
     }
 
@@ -76,7 +75,7 @@ public class CharacterScript : MonoBehaviour
         controller.Move(playerVelocity * Time.deltaTime);
     }
 
-    void LookAtPosition(Vector3 position){
+    public virtual void LookAtPosition(Vector3 position){
 
         // use a raycast to find position
         Ray ray = cam.ScreenPointToRay(position);
@@ -85,8 +84,8 @@ public class CharacterScript : MonoBehaviour
 
         if(groundPlane.Raycast(ray, out rayLength)){
             Vector3 target = ray.GetPoint(rayLength);
-            mesh.LookAt(target);
-            Debug.DrawLine(mesh.position, target, Color.blue);
+            this.transform.LookAt(new Vector3(target.x, 0, target.z));
+            Debug.DrawLine(this.transform.position, target, Color.blue);
         }
     }
 }
